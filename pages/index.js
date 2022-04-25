@@ -5,14 +5,18 @@ import { client } from "../lib/client";
 const Home = ({ products, bannerData }) => {
   return (
     <>
-      <HeroBanner />
+      <HeroBanner heroBanner={bannerData.length && bannerData[0]} />
+      {console.log(bannerData)}
       <div className="products-heading">
         <h2>Best Sellers</h2>
         <p>All kinds of Audio Tech!</p>
-        <div className="products-container"></div>
-        {products?.map((product) => product.name)}
+        <div className="products-container">
+          {products?.map((product) => (
+            <Product key={product._id} product={product} />
+          ))}
+        </div>
       </div>
-      <FooterBanner />
+      <FooterBanner footerBanner={bannerData.length && bannerData[0]} />
     </>
   );
 };
