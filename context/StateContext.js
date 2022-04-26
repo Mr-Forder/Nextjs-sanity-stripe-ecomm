@@ -6,9 +6,12 @@ const Context = createContext();
 export const StateContext = ({ children }) => {
   const [showCart, setShowCart] = useState(false);
   const [cartItems, setCartItems] = useState([]); //items in cart - default is empty array, to be filled with products
-  const [totalPrice, setTotalPrice] = useState();
-  const [totalQuantities, setTotalQuantities] = useState();
+  const [totalPrice, setTotalPrice] = useState(0);
+  const [totalQuantities, setTotalQuantities] = useState(0);
   const [qty, setQty] = useState(1);
+  //variables for hadnling cart item changes - not state variables for once!
+  let foundProduct;
+  let index;
 
   //ADD A PRODUCT TO CART////////////////////////////////////////////////////////////////////////////////////////////////////
   const onAdd = (product, quantity) => {
@@ -44,6 +47,46 @@ export const StateContext = ({ children }) => {
     toast.success(`${qty} ${product.name} added to cart.`);
   };
 
+  //REMOVE ITEM FROM CART////////////////////////////////////////////////////////////////////////////////////////////////////
+  const removeCartItem = (product) => {
+    //find and target item user is updating, and find it's index. to do this, we...
+    foundProduct = cartItems.find((item) => item._id === product._id); //..search cart items array for item matching product id of item in question
+    const newCartItems = cartItems.filter((item) => item._id !== product._id); //filter cart items to keep all cart items except the item with an index that is the same as our foundItem
+    setTotalPrice(
+      (prevTotalPrice) =>
+        prevTotalPrice - foundProduct.price * foundProduct.quantity
+    ); //set total price to prev total price - pice of selected product * number of those products in cart
+    setTotalQuantities(
+      (prevTotalQuantities) => prevTotalQuantities - foundProduct.quantity //then set total quantities to prev quantitiy - quantity of targeted product
+    );
+    setCartItems(newCartItems); //finaly, set cart items equal to newcart items
+  };
+  //CHANGE ITEM QUANTITY INSIDE CART COMPONENT////////////////////////////////////////////////////////////////////////////////////////////////////
+  const modifyCartItemQuantity = (id, value) => {
+    //find and target item user is updating, and find it's index. to do this, we...
+    foundProduct = cartItems.find((item) => item._id === id); //..search cart items array for item matching product id of item in question
+    index = cartItems.findIndex((product) => product._id === id); //find index of item in question in cart items array
+    const newCartItems = cartItems.filter((item) => item._id !== id); //filter cart items to keep all cart items except the item with an index that is the same as our foundItem
+    if (value === "inc") {
+      setCartItems([
+        ...newCartItems,
+        { ...foundProduct, quantity: foundProduct.quantity + 1 },
+      ]); //update cart items array by spreading, adding 1 to the quantity of the product being targeted (foundProduct, found in the saerch we just did)
+      setTotalPrice((prevTotalPrice) => prevTotalPrice + foundProduct.price); //then take total price and add product price to it
+      setTotalQuantities((prevTotalQuantities) => prevTotalQuantities + 1);
+    } else if (value === "dec") {
+      //value - one of this function's 2 parameters, passed in when func is called, will look like: modifyCartItemQuantity(item._id, "dec")
+      if (foundProduct.quantity > 1) {
+        setCartItems([
+          ...newCartItems,
+          { ...foundProduct, quantity: foundProduct.quantity - 1 },
+        ]); //update cart items array by spreading, adding 1 to the quantity of the product being targeted (foundProduct, found in the saerch we just did)
+        setTotalPrice((prevTotalPrice) => prevTotalPrice - foundProduct.price); //then take total price and add product price to it
+        setTotalQuantities((prevTotalQuantities) => prevTotalQuantities - 1);
+      }
+    }
+  };
+
   //HANDLER TO INCREASE ITEM QUANITIY IN CART////////////////////////////////////////////////////////////////////////////////////////////////////
   const increaseQuantity = () => {
     setQty((prevQty) => prevQty + 1); //set quantity state - takes in prevState of qty (which is prevQty) and adds 1
@@ -60,6 +103,7 @@ export const StateContext = ({ children }) => {
     <Context.Provider
       value={{
         showCart,
+        setShowCart,
         cartItems,
         totalPrice,
         totalQuantities,
@@ -67,6 +111,8 @@ export const StateContext = ({ children }) => {
         increaseQuantity,
         decreaseQuantity,
         onAdd,
+        modifyCartItemQuantity,
+        removeCartItem,
       }}
     >
       {children}
