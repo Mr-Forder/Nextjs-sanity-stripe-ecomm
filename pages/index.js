@@ -1,4 +1,4 @@
-import React from "react";
+import { useEffect } from "react";
 import { Product, FooterBanner, HeroBanner } from "../components";
 import { client } from "../lib/client";
 

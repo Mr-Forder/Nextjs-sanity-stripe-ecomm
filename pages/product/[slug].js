@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Product } from "../../components";
+import { useStateContext } from "../../context/StateContext";
 import {
   AiOutlineMinus,
   AiOutlinePlus,
@@ -10,6 +11,8 @@ import { urlFor, client } from "../../lib/client";
 const productDetails = ({ product, products }) => {
   const { image, name, details, price } = product;
   const [index, setIndex] = useState(0);
+  //grabbed from our main context
+  const { increaseQuantity, decreaseQuantity, qty } = useStateContext();
   return (
     <div>
       <div className="product-detail-container">
@@ -52,11 +55,11 @@ const productDetails = ({ product, products }) => {
           <div className="quantity">
             <h3>Quantity:</h3>
             <p className="quantity-desc">
-              <span className="minus" onClick="">
+              <span className="minus" onClick={decreaseQuantity}>
                 <AiOutlineMinus />
               </span>
-              <span className="num">69</span>
-              <span className="plus" onClick="">
+              <span className="num">{qty}</span>
+              <span className="plus" onClick={increaseQuantity}>
                 <AiOutlinePlus />
               </span>
             </p>
